@@ -3,45 +3,61 @@ import React from 'react';
 
 export default function Counter() {
 
-  const DATA = [
+  const list = [
     {
       title: 'First',
       value: 0,
     },
     {
       title: 'Second',
-      value: 0,
+      value: 1,
     },
     {
       title: 'Third',
-      value: 0,
+      value: 2,
     },
   ];
 
-  const Item = ({title, value}) => (
-    <View style={styles.buttons}>
+  const Item = ({title, value}) => {
 
-      <Text> {title} = { value } </Text>
+    // const [value, onChangeValue] = React.useState('');
 
-      <Button 
-        title="-">
-        onPress={() => { value + 1 }}
-      </Button>
+    function add() {
 
-      <Button 
-        title="Limpar">
-      </Button>
+      var podioPorPais = list.map(function(item, indice) {
+        console.log(item.value)
+        return item.value + 1
+      });
 
-      <Button 
-        title="+">
-      </Button>
-    </View>
-  );
+      list.value = podioPorPais
+    }
+
+    return (
+      <View style={styles.buttons}>
+
+        <Text> {title} = { value } </Text>
+
+        <Button 
+          title="-">
+        </Button>
+
+        <Button 
+          title="Limpar">
+        </Button>
+
+        <Button 
+          title="+">
+          onPress={() => {add()}}
+        </Button>
+        
+      </View>
+    )
+  };
 
   return (
     <View style={styles.container}>
       <FlatList
-        data={DATA}
+        data={list}
         renderItem={({item, value}) => <Item title={item.title} value={item.value} />}
         keyExtractor={item => item.title}
       />
