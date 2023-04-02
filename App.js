@@ -1,35 +1,85 @@
-import { StyleSheet, Text, View, Button, TextInput, FlatList } from 'react-native';
+import { StyleSheet, Text, View, Button, TextInput, FlatList, PermissionsAndroid } from 'react-native';
 import React from 'react';
-import Counter from "./src/Pages/Counter";
 import { create } from 'zustand'
 
 export default function App() {
 
+  function getIndex(list, name) {
+    const index = list.indexOf(list.filter(function (obj) {
+      return obj.title == name
+    })[0])
+
+    return index
+  }
+
   const useStore = create(set => ({
     list: [
       {
-        title: 'First',
+        title: 'maria',
         value: 0,
-      },
+      }
     ],
-    inc: (name) => set((state) => {
-      
+    addNewItem: (name) => set((state) => {
+      try {
+        state.list.filter(function (obj) {
+          if (obj.title == name) {
+            throw new Error();
+          }
+        })
+
+        const item = state.list = [
+          ...state.list,
+          {
+            title: name,
+            value: 0
+          }
+        ]
+
+        return { item }
+      } catch (error) {
+        return state.list
+      }
+    }),
+    sum: (title) => set((state) => {
+      state.list[getIndex(state.list, title)].value += 1
+
       const item = state.list = [
         ...state.list,
-        {
-        title: name, 
-        value: 0
-        }
       ]
-      
-      return { item }
 
+      return { item }
     }),
-    
+    subtract: (title) => set((state) => {
+      state.list[getIndex(state.list, title)].value += -1
+
+      const item = state.list = [
+        ...state.list,
+      ]
+
+      return { item }
+    }),
+    clean: (title) => set((state) => {
+      state.list[getIndex(state.list, title)].value = 0
+
+      const item = state.list = [
+        ...state.list,
+      ]
+
+      return { item }
+    }),
+    excludeItem: (title) => set((state) => {
+      state.list.splice(getIndex(state.list, title), 1)
+
+      const item = state.list = [
+        ...state.list,
+      ]
+
+      return { item }
+    }),
   }))
-  
+
   function Controls() {
-    const inc = useStore(state => state.inc)
+    const addNewItem = useStore(state => state.addNewItem)
     const list = useStore(state => state.list)
     const [name, onChangeText] = React.useState('');
 
@@ -41,53 +91,62 @@ export default function App() {
             onChangeText={onChangeText}
             value={name}
             placeholder="Nome do ítem"
-          />      
+          />
           <Button
-            style={styles.button}
             title="Adicionar"
-            onPress={() => {inc(name)}}
-          />     
+            onPress={() => { addNewItem(name) }}
+          />
         </View>
         <FlatList
           data={list}
-          renderItem={({item, value}) => <Item title={item.title} value={item.value} />}
+          renderItem={({ item, value }) => <Item title={item.title} value={item.value} />}
           keyExtractor={item => item.title}
-        />     
-    </>  
+        />
+      </>
     )
   }
-  
-  const Item = ({title, value}) => {
+
+  const Item = ({ title, value }) => {
+    const sum = useStore(state => state.sum)
+    const subtract = useStore(state => state.subtract)
+    const clean = useStore(state => state.clean)
+    const excludeItem = useStore(state => state.excludeItem)
+
     return (
-      <View style={styles.buttons}>
-
-        <Text> {title} = { value } </Text>
-
-        <Button 
-          title="-">
-        </Button>
-
-        <Button 
-          title="Limpar">
-        </Button>
-
-        <Button 
-          title="+">
-        </Button>
-        
+      <View style={styles.list}>
+        <View style={styles.list_itens}>
+          <Text style={styles.list_text}> {title} = {value} </Text>
+          <View style={styles.list_buttons}>
+            <Button
+              title="-"
+              onPress={() => { subtract(title) }}
+            />
+            <Button
+              title="Limpar"
+              onPress={() => { clean(title) }}
+            />
+            <Button
+              title="+"
+              onPress={() => { sum(title) }}
+            />
+          </View>
+        </View>
+        <Button
+          title="x"
+          onPress={() => { excludeItem(title) }}
+        />
       </View>
     )
+
   };
 
-  return ( 
+  return (
     <Controls></Controls>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#fff',
-    alignItems: 'center',
     justifyContent: 'center',
     flexDirection: 'row',
     marginTop: '20%'
@@ -95,17 +154,34 @@ const styles = StyleSheet.create({
   input: {
     borderWidth: 1,
     padding: 10,
-    width: 200,
-    marginRight: 10
+    width: '50%',
+    marginRight: '5%',
+    height: 35,
   },
-  button: {
-    margin: 20,
-    height: 200
+  list: {
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: '1%',
+    marginTop: '10%',
+    marginRight: '5%',
   },
-  buttons: {
+  list_text: {
+    fontSize: 20,
+  },
+  list_itens: {
+    marginRight: '5%',
+    alignItems: 'center',
+    borderWidth: 1,
+    padding: '5%',
+    paddingLeft: '10%',
+    paddingRight: '10%'
+  },
+  list_buttons: {
     display: 'flex',
     flexDirection: 'row',
     gap: 10,
-    margin: 20
+    margin: 10,
   }
 });
